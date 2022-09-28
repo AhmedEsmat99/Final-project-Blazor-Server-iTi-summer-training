@@ -1,0 +1,67 @@
+﻿
+@page "/BuyProduct"
+@inject NavigationManager nav
+@if (show)
+{
+<h1>Enter your data</h1>
+    <div class="container w-50 ">
+    <EditForm Model="Cust"  class="mt-5 d-flex flex-column" OnValidSubmit="OnAddCust">
+      <div class="mb-3">
+        <label for="Name" class="form-label">Enter Your Name</label>
+        <InputText type="Text" class="form-control" id="Name"@bind-Value="Cust.Name" />
+      </div>
+      <div class="mb-3">
+        <label for="phone" class="form-label">Enter Your Phone</label>
+        <InputText type="Text" class="form-control" id="phone" @bind-Value="Cust.phone" />
+      </div>
+      <div class="mb-3">
+        <label for="Email" class="form-label">Email address</label>
+        <InputText type="email" class="form-control" id="Email" @bind-Value="Cust.Email" />
+      </div>
+      <button type="submit" class="btn btn-primary" onclick="">Buy</button>
+    </EditForm>
+</div>
+}
+else
+{
+    <div class="alert alert-success" role="alert">
+    <h1> The data has been sent successfully </h1>
+    <span class="text-black"> If you want to see the bill, click  </span>
+    <a class="btn btn-dark" href="Invoice?idprod=@idPrud&idCust=@Cust.Id"  > Ok </a>
+    </div>
+}
+@code {
+    bool show = true;
+    Customer Cust = new Customer();
+    Order ord = new Order();
+    ProductDB db = new ProductDB();
+    DateTime Date = new DateTime();
+    System.Uri URL;
+    int idPrud;
+    int Q;
+    protected override void OnInitialized()
+    {
+        URL = nav.ToAbsoluteUri(nav.Uri);
+        if(QueryHelpers.ParseQuery(URL.Query).TryGetValue("ID" ,out var idval))
+        {
+            idPrud = int.Parse(idval);
+        }
+        if(QueryHelpers.ParseQuery(URL.Query).TryGetValue("NUM" ,out var Qval))
+        {
+            Q = int.Parse(Qval);
+        }
+        base.OnInitialized();
+    }
+    void OnAddCust()
+    {
+        db.Customers.Add(Cust);
+        db.SaveChanges();
+        if (Cust.Id != 0)
+        {
+            Order ord1 = new Order { Idd_prod = idPrud, Idd_cust = Cust.Id, QTY = Q, date = DateTime.Now };
+            db.Orders.Add(ord1);
+            db.SaveChanges();
+            show = false;
+        }
+    }
+}

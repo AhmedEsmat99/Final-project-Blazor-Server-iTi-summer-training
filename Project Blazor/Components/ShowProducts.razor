@@ -1,0 +1,34 @@
+﻿<h3>ShowProducts</h3>
+    <div class="container">
+        <div class="row">
+            @foreach(var product in Products)
+            {
+            <div class="col-sm-4 p-2">
+                <div class="card" style="width: 18rem;">
+                      <img src="@product.Image" class="card-img-top" alt="...">
+                      <div class="card-body">
+                        <h5 class="card-title">@product.Name.Substring(0,Math.Min(20,product.Name.Length))</h5>
+                        <p class="card-text">
+                            @product.Description.Substring(0,Math.Min(20,product.Description.Length))
+                        </p>
+                        <span class=" fw-bold text-success d-flex justify-content-center " > Quantity </span>
+                        <EditForm Model="Q" >
+                        <InputNumber class="w-100 p-2" type="Number" @bind-Value="Q"/>
+                        </EditForm>
+                        <h5 class="card-text text-center">@product.Price.ToString("C")</h5>
+                        <a href="BuyProduct?ID=@product.ID&NUM=@Q " class="btn btn-danger w-100">Add To Card</a>
+                      </div>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+@code {
+    List<Product> Products = new List<Product>();
+    ProductDB db = new ProductDB();
+    [Parameter] public int Q { get; set; }
+    protected async override Task OnInitializedAsync()
+    {
+        Products = db.Products.ToList();
+    }
+}

@@ -1,0 +1,96 @@
+﻿@page "/Update Category/{IDCATE:int}"
+@inject NavigationManager MyNavigation
+<h3 class="mb-3">Add_Category</h3>
+<div class="container p-4 mb-5" style="border:dashed 4px #0000ff">
+        <div class="row">
+            <h1 class="">Add Categorys</h1>
+            <EditForm Model="Categ" OnValidSubmit="OnAddOrUpdate">
+                <div class="mb-3">
+                  <label for="DEPT" class="form-label">Category Name</label>
+                  <InputText class="form-control" id="DEPT" @bind-Value="Categ.Name" />
+                </div>
+                <button type="submit" class="btn btn-primary">Add Category</button>
+
+            </EditForm>
+        </div>
+    @*List Category*@
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Name</th>
+              <th scope="col">Delete</th>
+              <th scope="col">Update</th>
+            </tr>
+
+          </thead>
+          <tbody>
+              @foreach(var iteam in Categs)
+              {
+                 <tr>
+                    <td>@iteam.Id</td>
+                    <td>@iteam.Name</td>
+                    <td>
+                        <button @onclick="@( ()=>OnDelete(iteam) )" class="btn btn-danger">Delete</button>
+                    </td>
+                    <td>
+                        <button @onclick="@( ()=>OnUpdate(iteam.Id) )" class="btn btn-success">Update</button>
+                    </td>
+                 </tr>
+              }
+          </tbody>
+        </table>
+</div>
+@code {
+    string header = "Add Category";
+    Category Categ = new Category();
+    List<Category> Categs = new List<Category>();
+    ProductDB db = new ProductDB();
+    [Parameter] public int IDCATE { get; set; }
+    protected override Task OnInitializedAsync()
+    {
+        if (IDCATE != 0)
+        {
+            Categ = db.Categories.FirstOrDefault(i => i.Id == IDCATE);
+            header = "Update SubCategory";
+        }
+        Categs = db.Categories.ToList();
+        return base.OnInitializedAsync();
+    }
+
+    void OnDelete(Category delete)
+    {
+        db.Categories.Remove(delete);
+        db.SaveChanges();
+        Categs.Remove(delete);
+        MessagingCenter.Send(this, "CategoryDeleted", delete);
+    }
+    void OnUpdate(int id)
+    {
+        MyNavigation.NavigateTo($"/Update Category/{id}");
+    }
+    void OnAddCategory()
+    {
+        db.Categories.Add(Categ);
+        db.SaveChanges();
+        if (Categ.Id != 0)
+        {
+            Categs.Add(Categ);
+            MessagingCenter.Send(this, "CategoryAdded", Categ);
+            Categ = new Category();
+        }
+    }
+    void OnUpdateCategory()
+    {
+        db.Categories.Update(Categ);
+        db.SaveChanges();
+        MyNavigation.NavigateTo("/AddCategory_SubCategory");
+    }
+    void OnAddOrUpdate()
+    {
+        if (IDCATE != 0)
+            OnUpdateCategory();
+        else
+            OnAddCategory();
+    }
+}

@@ -1,0 +1,82 @@
+﻿@page "/Update Product/{IDPROD:int}"
+@inject NavigationManager MyNavigation
+    <div class="container">
+        <div class="row">
+            <h1 class="">ADD Products</h1>
+            <EditForm Model="Prod" OnValidSubmit="OnAddOrUpdate">
+                <div class="mb-3">
+                  <label for="DEPT" class="form-label">Product Name</label>
+                  <InputText class="form-control" id="DEPT" @bind-Value="Prod.Name" />
+                </div>
+                <div class="mb-3">
+
+                  <label for="DEPT" class="form-label">Product Description</label>
+                  <InputText class="form-control" id="DEPT" @bind-Value="Prod.Description" />
+                </div>
+                <div class="mb-3">
+                  
+                  <label for="DEPT" class="form-label">Product Image => (Please Copy URL of any image )</label>
+                  <InputText class="form-control" id="DEPT" @bind-Value="Prod.Image" />
+                </div>
+                <div class="mb-3">
+                  
+                  <label for="DEPT" class="form-label">Product Price</label>
+                  <InputNumber class="form-control" id="DEPT" @bind-Value="Prod.Price" />
+                </div>
+                <div class="mb-3">
+
+                    <label> Please Select The SubCategory </label>
+                    <InputSelect class="form-select" @bind-Value="Prod.SubCategoryId">
+                        <option disabled> Please Select The SubCategory </option>
+                        @foreach(var iteam in Subs)
+                        {
+                            <option value="@iteam.Id"> @iteam.Name </option>
+                        }
+                    </InputSelect>
+
+                </div>
+                <button type="submit" class="btn btn-primary">@header</button>
+
+            </EditForm>
+        </div>
+    </div>
+
+@code{
+    string header = "Add Product";
+    [Parameter] public int IDPROD { get; set; }
+    Product Prod = new Product();
+    List<SubCategory> Subs = new List<SubCategory>();
+    ProductDB db = new ProductDB();
+    protected async override Task OnInitializedAsync()
+    {
+        if (IDPROD != 0)
+        {
+            Prod = db.Products.FirstOrDefault(i => i.ID == IDPROD);
+            header = "Update Product";
+        }
+        Subs = db.SubCategories.ToList();
+    }
+    void OnAddProducts()
+    {
+        db.Products.Add(Prod);
+        db.SaveChanges();
+        if (Prod.ID != 0)
+        {
+            MessagingCenter.Send(this, "ProdAdded", Prod);
+            Prod = new Product();
+        }
+    }
+    void OnUpdateProduct()
+    {
+        db.Products.Update(Prod);
+        db.SaveChanges();
+        MyNavigation.NavigateTo("/");
+    }
+    void OnAddOrUpdate()
+    {
+        if (IDPROD != 0)
+            OnUpdateProduct();
+        else
+            OnAddProducts();
+    }
+}

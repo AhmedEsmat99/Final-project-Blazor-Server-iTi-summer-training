@@ -1,0 +1,117 @@
+﻿@page "/Invoice"
+@inject NavigationManager nav
+@using System.Linq;
+<div class="container">
+<div class="row gutters">
+		<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+			<div class="card">
+				<div class="text-center Invo-title ">
+					<h1 class="pt-5 Invo-title-h1 ">فاتورة الكترونيه</h1>
+				</div>
+				<div class="card-body p-0">
+					<div class="invoice-container">
+						<div class="invoice-header">
+							<div class="row gutters">
+								<div class=" col-md-12 col-sm-12 col-12">
+									<div class="invoice-details d-flex justify-content-between">
+										<h4>Your Name :@Cust.Name </h4>
+										<h4>Phone :@Cust.phone </h4>
+										<h4>Email :@Cust.Email </h4>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="invoice-body">
+							<!-- Row start -->
+							<div class="row gutters">
+								<div class="col-lg-12 col-md-12 col-sm-12">
+									<div class="table-responsive">
+										<table class="table custom-table m-0">
+											<thead>
+												<tr>
+													<th>Items</th>
+													<th>Product ID</th>
+													<th>Quantity</th>
+													<th>Sub Total</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>
+														Name : @prod.Name
+														<p class="m-0 text-muted">
+															Description:
+															@prod.Description
+														</p>
+													</td>
+													<td>@prod.ID</td>
+													<td>@ord.QTY</td>
+													<td>@prod.Price</td>
+												</tr>
+												<tr>
+													<td>&nbsp;</td>
+													<td colspan="2">
+														<p>
+															Subtotal
+														</p>
+														<h5 class="text-success"><strong>Grand Total</strong></h5>
+													</td>			
+													<td>
+														<p>
+															@prod.Price
+														</p>
+														<h5 class="text-success"><strong>@sum(prod.Price,ord.QTY)</strong></h5>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+							<!-- Row end -->
+						</div>
+						<div class="invoice-footer">
+							Thank you for your Business.
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+@code {
+	System.Uri URL;
+	int idprod;
+	int idCust;
+	Product prod = new Product();
+	Customer Cust = new Customer();
+	Order ord =new Order();
+	ProductDB db = new ProductDB();
+	int sum(decimal x , int y)
+	{
+		return Convert.ToInt32(x) * y;
+	}
+	protected async override Task OnInitializedAsync()
+	{
+		ord =db.Orders.Where(p => (p.Idd_cust == idCust) && (p.Idd_prod == idprod)).FirstOrDefault();
+		prod = db.Products.Where(p => p.ID == idprod).FirstOrDefault();
+		Cust = db.Customers.Where(p => p.Id == idCust).FirstOrDefault();
+	}
+	protected override void OnInitialized()
+	{
+		
+        URL = nav.ToAbsoluteUri(nav.Uri);
+        if(QueryHelpers.ParseQuery(URL.Query).TryGetValue("idprod" ,out var idval))
+        {
+            idprod = int.Parse(idval);
+        }
+        if(QueryHelpers.ParseQuery(URL.Query).TryGetValue("idCust" ,out var Qval))
+        {
+            idCust = int.Parse(Qval);
+        }
+        base.OnInitialized();
+    }
+}

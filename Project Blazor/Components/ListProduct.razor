@@ -1,0 +1,57 @@
+﻿<h3>Products</h3>
+@inject NavigationManager MyNavigation
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">Name</th>
+      <th scope="col">Desc</th>
+      <th scope="col" class="text-center">Image</th>
+      <th scope="col">Price</th>
+      <th scope="col">Delete</th>
+      <th scope="col">Update</th>
+    </tr>
+
+  </thead>
+  <tbody>
+      @foreach(var iteam in prod)
+      {
+         <tr>
+            <td>@iteam.ID</td>
+            <td>@iteam.Name</td>
+            <td>@iteam.Description</td>
+            <td class="text-center"> <img class="w-25" src="@iteam.Image"/></td>
+            <td>@iteam.Price.ToString("C")</td>
+            <td>
+                    <button @onclick="@( ()=>OnDelete(iteam) )" class="btn btn-danger">Delete</button>
+            </td>
+            <td>
+                    <button @onclick="@( ()=>OnUpdate(iteam.ID) )" class="btn btn-success">Update</button>
+            </td>
+         </tr>
+      }
+  </tbody>
+</table>
+@code {
+    List<Product> prod = new List<Product>();
+    ProductDB db = new ProductDB();
+    protected async override Task OnInitializedAsync()
+    {
+        prod = db.Products.ToList();
+        MessagingCenter.Subscribe<AddProducts,Product>
+        (this,"ProdAdded",async (sender,prodect)=>{
+            prod.Add(prodect);
+            await InvokeAsync(() => StateHasChanged() );
+        });
+    }
+    void OnDelete(Product delete)
+    {
+        db.Products.Remove(delete);
+        db.SaveChanges();
+        prod.Remove(delete);
+    }
+    void OnUpdate(int id)
+    {
+        MyNavigation.NavigateTo($"/Update Product/{id}");
+    }
+}

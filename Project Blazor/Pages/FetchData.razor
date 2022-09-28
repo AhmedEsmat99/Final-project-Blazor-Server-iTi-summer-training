@@ -1,0 +1,41 @@
+﻿@page "/fetchdata"
+<PageTitle>fetch data</PageTitle>
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from a service.</p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producr. (ID)</th>
+                <th>Customer. (ID)</th>
+                <th>Quantity</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in ords)
+            {
+                <tr>
+                    <td>@forecast.Idd_cust</td>
+                    <td>@forecast.Idd_prod</td>
+                    <td>@forecast.QTY</td>
+                    <td>@forecast.date</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+@code {
+    Order ord =new Order();
+    List<Order> ords =new List<Order>();
+
+    ProductDB db = new ProductDB();
+    Product prod = new Product();
+    Customer Cust = new Customer();
+
+    protected async override Task OnInitializedAsync()
+    {
+        ords = db.Orders.ToList();
+    }
+}

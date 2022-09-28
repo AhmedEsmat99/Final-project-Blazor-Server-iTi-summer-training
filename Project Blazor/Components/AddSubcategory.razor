@@ -1,0 +1,119 @@
+﻿@page "/Update Subcategory/{IDSUB:int}"
+@inject NavigationManager MyNavigation
+
+<h3 class="mb-3">Add_Subcategory</h3>
+
+<div class="container p-4 mb-5" style="border:dashed 4px  #9c27b0">
+        <div class="row">
+            <h1 class="">@header</h1>
+            <EditForm Model="SubC" OnValidSubmit="OnAddOrUpdate">
+                <div class="mb-3">
+                <label for="DEPT" class="form-label">Subcategory Name</label>
+                <InputText class="form-control" id="DEPT" @bind-Value="SubC.Name" />
+                </div>
+                <div class="mb-3">
+                    <label> Please Select The Category </label>
+                    <InputSelect class="form-select" @bind-Value="SubC.CategoryId">
+                        <option disabled> Please Select The Category </option>
+                        @foreach(var iteam in Categs)
+                        {
+                            <option value="@iteam.Id"> @iteam.Name </option>
+                        }
+                    </InputSelect>
+                </div>
+                <button type="submit" class="btn btn-primary">@header</button>
+
+            </EditForm>
+    </div>
+    @*List OnAddSubcategory*@
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Name</th>
+              <th scope="col">Delete</th>
+              <th scope="col">Update</th>
+            </tr>
+
+          </thead>
+          <tbody>
+              @foreach(var iteam in SubCs)
+              {
+                 <tr>
+                    <td>@iteam.Id</td>
+                    <td>@iteam.Name</td>
+                    <td>
+                        <button @onclick="@( ()=>OnDelete(iteam) )" class="btn btn-danger">Delete</button>
+                    </td>
+                    <td>
+                        <button @onclick="@( ()=>OnUpdate(iteam.Id) )" class="btn btn-success">Update</button>
+                    </td>
+                 </tr>
+              }
+          </tbody>
+        </table>
+ </div>
+
+@code {
+    List<Category> Categs = new List<Category>();
+    SubCategory SubC = new SubCategory();
+    List<SubCategory> SubCs = new List<SubCategory>();
+    ProductDB db = new ProductDB();
+    [Parameter] public int IDSUB { get; set; }
+    string header = "Add New SubCategories";
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (IDSUB != 0)
+        {
+            SubC = db.SubCategories.FirstOrDefault(i => i.Id == IDSUB);
+            header = "Update SubCategory";
+        }
+        Categs = db.Categories.ToList();
+        SubCs = db.SubCategories.ToList();
+        MessagingCenter.Subscribe<AddCategory,Category>
+        (this,"CategoryAdded",async (sender,Categ)=>{
+            Categs.Add(Categ);
+            await InvokeAsync(() => StateHasChanged() );
+        });
+
+        MessagingCenter.Subscribe<AddCategory,Category>
+        (this,"CategoryDeleted",async (sender,Categ)=>{
+        Categs.Remove(Categ);
+        await InvokeAsync(() => StateHasChanged() );
+        });
+    }
+    void OnDelete(SubCategory delete)
+    {
+        db.SubCategories.Remove(delete);
+        db.SaveChanges();
+        SubCs.Remove(delete);
+    }
+    void OnUpdate(int id)
+    {
+        MyNavigation.NavigateTo($"/Update Subcategory/{id}");
+    }
+    void OnAddSubcategory()
+    {
+        db.SubCategories.Add(SubC);
+        db.SaveChanges();
+        if (SubC.Id != 0)
+        {
+            SubCs.Add(SubC);
+            SubC = new SubCategory();
+        }
+    }
+    void OnUpdateSubcategory()
+    {
+        db.SubCategories.Update(SubC);
+        db.SaveChanges();
+        MyNavigation.NavigateTo("/AddCategory_SubCategory");
+    }
+    void OnAddOrUpdate()
+    {
+        if (IDSUB != 0)
+            OnUpdateSubcategory();
+        else
+            OnAddSubcategory();
+    }
+}
